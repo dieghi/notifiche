@@ -74,10 +74,16 @@ export class FirebaseMessagingService {
 
     try {
       if (!this.messagingSwRegistration) {
+        const serviceWorkerUrl = new URL('firebase-messaging-sw.js', document.baseURI).toString();
+        const serviceWorkerScope = new URL(
+          'firebase-cloud-messaging-push-scope/',
+          document.baseURI
+        ).pathname;
+
         this.messagingSwRegistration = await navigator.serviceWorker.register(
-          '/firebase-messaging-sw.js',
+          serviceWorkerUrl,
           {
-            scope: '/firebase-cloud-messaging-push-scope'
+            scope: serviceWorkerScope
           }
         );
       }

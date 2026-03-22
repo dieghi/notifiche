@@ -16,12 +16,15 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+const appBaseUrl = new URL('./', self.location.href).toString();
+const iconUrl = new URL('./icons/icon-192.svg', self.location.href).toString();
+
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || 'Nuova notifica';
   const options = {
     body: payload.notification?.body,
-    icon: '/icons/icon-192.svg',
-    badge: '/icons/icon-192.svg',
+    icon: iconUrl,
+    badge: iconUrl,
     data: payload.data || {}
   };
 
@@ -31,10 +34,7 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const channelCode = event.notification.data?.channelCode;
-  const scopeUrl = self.registration.scope.endsWith('/')
-    ? self.registration.scope
-    : `${self.registration.scope}/`;
-  const targetUrl = channelCode ? `${scopeUrl}#/channels/${channelCode}` : `${scopeUrl}#/home`;
+  const targetUrl = channelCode ? `${appBaseUrl}#/channels/${channelCode}` : `${appBaseUrl}#/home`;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
