@@ -62,7 +62,10 @@ export class NicknamePage {
   private readonly router = inject(Router);
 
   readonly form = this.formBuilder.nonNullable.group({
-    nickname: ['', [Validators.required, Validators.maxLength(24)]]
+    nickname: [
+      this.registrationService.getPendingNickname(),
+      [Validators.required, Validators.maxLength(24)]
+    ]
   });
 
   continue(): void {
@@ -72,8 +75,7 @@ export class NicknamePage {
     }
 
     const nickname = this.form.getRawValue().nickname.trim();
-    this.registrationService.updateNickname(nickname);
-    sessionStorage.setItem('notifyqr.pendingNickname', nickname);
+    this.registrationService.savePendingNickname(nickname);
     void this.router.navigate(['/onboarding/confirm']);
   }
 }

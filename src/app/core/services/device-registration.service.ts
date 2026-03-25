@@ -94,6 +94,14 @@ export class DeviceRegistrationService {
     return this.storage.getPendingQr();
   }
 
+  savePendingNickname(nickname: string | null): void {
+    this.storage.setPendingNickname(nickname);
+  }
+
+  getPendingNickname(): string {
+    return this.storage.getPendingNickname();
+  }
+
   reset(): void {
     this.registrationState.set(null);
     this.storage.clearAll();

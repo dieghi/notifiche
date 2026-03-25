@@ -70,9 +70,7 @@ import { RoleBadgeComponent } from '../../../shared/components/role-badge.compon
 export class ConfirmPage {
   readonly loading = signal(false);
   readonly pendingQr = computed(() => this.registrationService.getPendingQr());
-  readonly nickname = computed(
-    () => sessionStorage.getItem('notifyqr.pendingNickname') || this.registrationService.nickname()
-  );
+  readonly nickname = computed(() => this.registrationService.getPendingNickname());
 
   constructor(
     private readonly registrationService: DeviceRegistrationService,
@@ -121,7 +119,7 @@ export class ConfirmPage {
     this.channelService.addSubscription(pendingQr, registration.deviceId);
     this.notificationService.seedChannelIfEmpty(pendingQr.channelCode);
     this.registrationService.savePendingQr(null);
-    sessionStorage.removeItem('notifyqr.pendingNickname');
+    this.registrationService.savePendingNickname(null);
 
     try {
       await this.firebaseCloudSyncService.syncDeviceState(

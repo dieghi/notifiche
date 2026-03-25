@@ -49,6 +49,19 @@ export class LocalStorageService {
     this.write(STORAGE_KEYS.pendingQr, payload);
   }
 
+  getPendingNickname(): string {
+    return this.read<string>(STORAGE_KEYS.pendingNickname) ?? '';
+  }
+
+  setPendingNickname(nickname: string | null): void {
+    if (!nickname) {
+      this.remove(STORAGE_KEYS.pendingNickname);
+      return;
+    }
+
+    this.write(STORAGE_KEYS.pendingNickname, nickname.trim());
+  }
+
   clearAll(): void {
     if (!this.isBrowser()) {
       return;
