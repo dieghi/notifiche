@@ -6,6 +6,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ChannelService } from '../../core/services/channel.service';
 import { DeviceRegistrationService } from '../../core/services/device-registration.service';
+import { FirebaseCloudSyncService } from '../../core/services/firebase-cloud-sync.service';
 import { FirebaseMessagingService } from '../../core/services/firebase-messaging.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { PwaService } from '../../core/services/pwa.service';
@@ -104,6 +105,7 @@ export class HomePage {
   readonly pwaService = inject(PwaService);
   private readonly channelService = inject(ChannelService);
   private readonly registrationService = inject(DeviceRegistrationService);
+  private readonly firebaseCloudSyncService = inject(FirebaseCloudSyncService);
   private readonly messagingService = inject(FirebaseMessagingService);
   private readonly notificationService = inject(NotificationService);
   private readonly snackBar = inject(MatSnackBar);
@@ -150,6 +152,19 @@ export class HomePage {
     });
 
     this.registrationService.updateMessagingState(result, this.pwaService.isInstalled());
+    const registration = this.registrationService.registration();
+    if (registration) {
+      try {
+        await this.firebaseCloudSyncService.syncDeviceState(
+          registration,
+          this.channelService.subscriptions()
+        );
+      } catch {
+        this.snackBar.open('Token ottenuto, ma la sincronizzazione cloud non e riuscita.', 'Chiudi', {
+          duration: 3000
+        });
+      }
+    }
     this.snackBar.open(
       result.permission === 'granted'
         ? 'Notifiche attivate.'

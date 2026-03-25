@@ -10,6 +10,9 @@ export const environment = {
     measurementId: 'G-R0G4CGXTWZ'
   },
   firebaseMessaging: {
-    vapidKey: 'BAotkyO-sNJ1KHRZnPd9t7mExc9HoCiwHSqo0REkzbMqy8UtrcyZjAcQkUBtzMmg4KEZwyNBO5bS5wujBHQuh88'
+    vapidKey: 'BAotkyO-sNJ1KHRZnPd9t7mExc9HoCiwHSqo0REkzbMmg4KEZwyNBO5bS5wujBHQuh88'
+  },
+  firebaseBackend: {
+    functionsRegion: 'europe-west1'
   }
 };

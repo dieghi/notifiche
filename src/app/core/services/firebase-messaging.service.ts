@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
 import { getToken, isSupported, Messaging, onMessage } from 'firebase/messaging';
 import { environment } from '../../../environments/environment';
 import { MessagingSetupResult } from '../models/app.models';
+import { FirebaseAppService } from './firebase-app.service';
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseMessagingService {
-  private firebaseApp = initializeApp(environment.firebase);
   private messagingInstance?: Messaging;
   private alreadyInitializedForegroundListener = false;
   private messagingSwRegistration?: ServiceWorkerRegistration;
 
   readonly firebaseProjectId = environment.firebase.projectId;
+
+  constructor(private readonly firebaseAppService: FirebaseAppService) {}
 
   async setupMessaging(
     onForegroundMessage?: (payload: { title: string; body: string; data?: Record<string, string> }) => void
@@ -37,7 +38,7 @@ export class FirebaseMessagingService {
 
     if (!this.messagingInstance) {
       const module = await import('firebase/messaging');
-      this.messagingInstance = module.getMessaging(this.firebaseApp);
+      this.messagingInstance = module.getMessaging(this.firebaseAppService.app);
     }
 
     const permission = await Notification.requestPermission();

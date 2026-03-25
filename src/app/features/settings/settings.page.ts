@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ChannelService } from '../../core/services/channel.service';
 import { DeviceRegistrationService } from '../../core/services/device-registration.service';
+import { FirebaseCloudSyncService } from '../../core/services/firebase-cloud-sync.service';
 import { FirebaseMessagingService } from '../../core/services/firebase-messaging.service';
 import { FirebaseTestingGuideService } from '../../core/services/firebase-testing-guide.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -67,6 +68,9 @@ import { PwaService } from '../../core/services/pwa.service';
           <div class="button-row">
             <button mat-flat-button color="primary" type="button" (click)="enableRealNotifications()">
               Attiva notifiche reali
+            </button>
+            <button mat-stroked-button type="button" (click)="syncCloudState()">
+              Sincronizza cloud
             </button>
             <button
               mat-stroked-button
@@ -178,6 +182,7 @@ import { PwaService } from '../../core/services/pwa.service';
 })
 export class SettingsPage {
   readonly registrationService = inject(DeviceRegistrationService);
+  readonly firebaseCloudSyncService = inject(FirebaseCloudSyncService);
   readonly messagingService = inject(FirebaseMessagingService);
   readonly testingGuide = inject(FirebaseTestingGuideService);
   private readonly pwaService = inject(PwaService);
@@ -211,6 +216,19 @@ export class SettingsPage {
 
     this.lastMessagingErrorState.set(result.error ?? '');
     this.registrationService.updateMessagingState(result, this.pwaService.isInstalled());
+    const registration = this.registrationService.registration();
+    if (registration) {
+      try {
+        await this.firebaseCloudSyncService.syncDeviceState(
+          registration,
+          this.channelService.subscriptions()
+        );
+      } catch {
+        this.snackBar.open('Token ottenuto, ma la sincronizzazione cloud non e riuscita.', 'Chiudi', {
+          duration: 3000
+        });
+      }
+    }
 
     this.snackBar.open(
       result.token
@@ -234,6 +252,26 @@ export class SettingsPage {
       this.snackBar.open('Clipboard non disponibile su questo browser.', 'Chiudi', {
         duration: 2500
       });
+    }
+  }
+
+  async syncCloudState(): Promise<void> {
+    const registration = this.registrationService.registration();
+    if (!registration) {
+      this.snackBar.open('Completa prima l’onboarding.', 'Chiudi', { duration: 2000 });
+      return;
+    }
+
+    try {
+      await this.firebaseCloudSyncService.syncDeviceState(
+        registration,
+        this.channelService.subscriptions()
+      );
+      this.snackBar.open('Stato cloud sincronizzato.', 'Chiudi', { duration: 2000 });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Sincronizzazione cloud non riuscita.';
+      this.snackBar.open(message, 'Chiudi', { duration: 3500 });
     }
   }
 

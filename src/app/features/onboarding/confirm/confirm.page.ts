@@ -6,6 +6,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ChannelService } from '../../../core/services/channel.service';
 import { DeviceRegistrationService } from '../../../core/services/device-registration.service';
 import { FirebaseMessagingService } from '../../../core/services/firebase-messaging.service';
+import { FirebaseCloudSyncService } from '../../../core/services/firebase-cloud-sync.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { PwaService } from '../../../core/services/pwa.service';
 import { RoleBadgeComponent } from '../../../shared/components/role-badge.component';
@@ -76,6 +77,7 @@ export class ConfirmPage {
   constructor(
     private readonly registrationService: DeviceRegistrationService,
     private readonly messagingService: FirebaseMessagingService,
+    private readonly firebaseCloudSyncService: FirebaseCloudSyncService,
     private readonly channelService: ChannelService,
     private readonly notificationService: NotificationService,
     private readonly pwaService: PwaService,
@@ -120,6 +122,17 @@ export class ConfirmPage {
     this.notificationService.seedChannelIfEmpty(pendingQr.channelCode);
     this.registrationService.savePendingQr(null);
     sessionStorage.removeItem('notifyqr.pendingNickname');
+
+    try {
+      await this.firebaseCloudSyncService.syncDeviceState(
+        registration,
+        this.channelService.subscriptions()
+      );
+    } catch {
+      this.snackBar.open('Profilo locale pronto. La sincronizzazione cloud verra completata piu tardi.', 'Chiudi', {
+        duration: 3500
+      });
+    }
 
     this.loading.set(false);
     this.snackBar.open('Onboarding completato.', 'Chiudi', { duration: 2500 });

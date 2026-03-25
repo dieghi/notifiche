@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // In questa fase il client non legge ne scrive direttamente Firestore.
+    // I dati sensibili, inclusi i token FCM, passano solo tramite Cloud Functions.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
